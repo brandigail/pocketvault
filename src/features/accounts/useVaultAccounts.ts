@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { TokenAccount } from '../../types'
 import { getAccounts } from '../storage/vaultStore'
 import { decodeBase32 } from '../totp/base32'
@@ -23,9 +23,14 @@ async function unlockAccount(vaultKey: CryptoKey, account: TokenAccount): Promis
   return { account, hmacKey }
 }
 
-/** Decrypts every account once per unlock. Only the HMAC keys are kept; plaintext secrets are dropped. */
-export function useVaultAccounts(vaultKey: CryptoKey): AccountsState {
+/**
+ * Decrypts every account once per unlock (and again on `reload`). Only the HMAC keys are kept;
+ * plaintext secrets are dropped.
+ */
+export function useVaultAccounts(vaultKey: CryptoKey): { state: AccountsState; reload: () => void } {
   const [state, setState] = useState<AccountsState>({ status: 'loading' })
+  const [reloads, setReloads] = useState(0)
+  const reload = useCallback(() => setReloads((count) => count + 1), [])
 
   useEffect(() => {
     let cancelled = false
@@ -43,7 +48,7 @@ export function useVaultAccounts(vaultKey: CryptoKey): AccountsState {
     return () => {
       cancelled = true
     }
-  }, [vaultKey])
+  }, [vaultKey, reloads])
 
-  return state
+  return { state, reload }
 }

@@ -68,10 +68,11 @@ function parseDigits(value: string | null): 6 | 8 {
   throw new Error('Digits must be 6 or 8')
 }
 
-function parsePeriod(value: string | null): number {
+/** Parses a period in seconds. Throws a user-readable Error unless it is a whole number from 1 to 300. */
+export function parsePeriod(value: string | null): number {
   if (value === null) return 30
   const period = Number(value)
-  if (!Number.isInteger(period) || period < 1 || period > MAX_PERIOD) {
+  if (value.trim() === '' || !Number.isInteger(period) || period < 1 || period > MAX_PERIOD) {
     throw new Error(`Period must be a whole number of seconds between 1 and ${MAX_PERIOD}`)
   }
   return period

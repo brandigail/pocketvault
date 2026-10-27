@@ -1,16 +1,20 @@
+import { useState } from 'react'
 import { useNow } from '../../shared/useNow'
 import { useVault } from '../vault/useVault'
 import { AccountRow } from './AccountRow'
+import { AddAccountScreen } from './AddAccountScreen'
 import { useNotice } from './useNotice'
 import { useVaultAccounts } from './useVaultAccounts'
 
 const TICK_MS = 250
+const BUTTON = 'h-10 rounded-lg px-4 text-sm font-medium'
 
 export function AccountsScreen({ vaultKey }: { vaultKey: CryptoKey }) {
   const { lock } = useVault()
-  const state = useVaultAccounts(vaultKey)
+  const { state, reload } = useVaultAccounts(vaultKey)
   const now = useNow(TICK_MS, true)
   const [notice, showNotice] = useNotice()
+  const [adding, setAdding] = useState(false)
 
   async function copy(code: string) {
     try {
@@ -21,17 +25,32 @@ export function AccountsScreen({ vaultKey }: { vaultKey: CryptoKey }) {
     }
   }
 
+  if (adding) {
+    return (
+      <AddAccountScreen
+        vaultKey={vaultKey}
+        onClose={() => setAdding(false)}
+        onAdded={() => {
+          reload()
+          setAdding(false)
+          showNotice('Account added')
+        }}
+      />
+    )
+  }
+
   return (
     <div className="mx-auto flex min-h-full w-full max-w-md flex-col px-4 pb-24">
       <header className="flex items-center justify-between py-4">
         <h1 className="text-xl font-semibold">PocketVault</h1>
-        <button
-          type="button"
-          onClick={lock}
-          className="h-10 rounded-lg border border-slate-300 px-4 text-sm font-medium hover:border-teal-600 dark:border-slate-600"
-        >
-          Lock
-        </button>
+        <div className="flex gap-2">
+          <button type="button" onClick={() => setAdding(true)} className={`${BUTTON} bg-teal-700 text-white hover:bg-teal-800`}>
+            Add
+          </button>
+          <button type="button" onClick={lock} className={`${BUTTON} border border-slate-300 hover:border-teal-600 dark:border-slate-600`}>
+            Lock
+          </button>
+        </div>
       </header>
 
       <main className="flex flex-1 flex-col gap-3">
@@ -42,7 +61,12 @@ export function AccountsScreen({ vaultKey }: { vaultKey: CryptoKey }) {
           </p>
         )}
         {state.status === 'ready' && state.accounts.length === 0 && (
-          <p className="py-8 text-center text-slate-500 dark:text-slate-400">No accounts yet.</p>
+          <div className="flex flex-col items-center gap-4 py-12 text-center">
+            <p className="text-slate-500 dark:text-slate-400">No accounts yet.</p>
+            <button type="button" onClick={() => setAdding(true)} className={`${BUTTON} bg-teal-700 text-white hover:bg-teal-800`}>
+              Add your first account
+            </button>
+          </div>
         )}
         {state.status === 'ready' && state.accounts.length > 0 && (
           <ul className="flex flex-col gap-3">
