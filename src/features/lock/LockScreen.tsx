@@ -3,7 +3,7 @@ import { FREE_ATTEMPTS } from '../vault/lockout'
 import { useVault } from '../vault/useVault'
 import { LockLayout } from './LockLayout'
 import { PinField } from './PinField'
-import { useNow } from './useNow'
+import { useNow } from '../../shared/useNow'
 
 function formatCountdown(totalSeconds: number): string {
   const minutes = Math.floor(totalSeconds / 60)

@@ -6,7 +6,7 @@
 - [x] 4. otpauth URI parser with tests
 - [x] 5. PIN setup, key derivation and encrypted secret storage
 - [x] 6. Lock screen with lockout delay and auto-lock
-- [ ] 7. Account list with live codes and countdown ring
+- [x] 7. Account list with live codes and countdown ring
 - [ ] 8. Add account: manual entry and URI paste
 - [ ] 9. Camera QR scanning with jsqr
 - [ ] 10. Edit, delete and reorder accounts

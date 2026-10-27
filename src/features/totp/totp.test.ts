@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { TotpAlgorithm } from '../../types'
-import { generateTotp, secondsRemaining } from './totp'
+import { formatCode, generateTotp, importHmacKey, secondsRemaining } from './totp'
 
 // RFC 6238 Appendix B. Each algorithm uses its own ASCII seed, 8 digits, 30 s period.
 const SEEDS: Record<TotpAlgorithm, string> = {
@@ -19,27 +19,32 @@ const VECTORS: [number, string, string, string][] = [
   [20000000000, '65353130', '77737706', '47863826'],
 ]
 
-const seed = (algorithm: TotpAlgorithm) => new TextEncoder().encode(SEEDS[algorithm])
+async function codeAt(algorithm: TotpAlgorithm, digits: 6 | 8, timestampMs: number): Promise<string> {
+  const key = await importHmacKey(new TextEncoder().encode(SEEDS[algorithm]), algorithm)
+  return generateTotp(key, digits, 30, timestampMs)
+}
 
 describe('generateTotp (RFC 6238 vectors)', () => {
   for (const [seconds, sha1, sha256, sha512] of VECTORS) {
     it(`matches at T=${seconds}`, async () => {
-      const common = { digits: 8, period: 30, timestamp: seconds * 1000 } as const
-      expect(await generateTotp({ ...common, secret: seed('SHA1'), algorithm: 'SHA1' })).toBe(sha1)
-      expect(await generateTotp({ ...common, secret: seed('SHA256'), algorithm: 'SHA256' })).toBe(sha256)
-      expect(await generateTotp({ ...common, secret: seed('SHA512'), algorithm: 'SHA512' })).toBe(sha512)
+      expect(await codeAt('SHA1', 8, seconds * 1000)).toBe(sha1)
+      expect(await codeAt('SHA256', 8, seconds * 1000)).toBe(sha256)
+      expect(await codeAt('SHA512', 8, seconds * 1000)).toBe(sha512)
     })
   }
 
   it('produces 6 digits as the last 6 of the 8-digit code, keeping leading zeros', async () => {
-    const code = await generateTotp({ secret: seed('SHA1'), algorithm: 'SHA1', digits: 6, period: 30, timestamp: 1111111109 * 1000 })
-    expect(code).toBe('081804')
+    expect(await codeAt('SHA1', 6, 1111111109 * 1000)).toBe('081804')
   })
 
   it('stays constant inside a period and changes at the boundary', async () => {
-    const at = (ms: number) => generateTotp({ secret: seed('SHA1'), algorithm: 'SHA1', digits: 6, period: 30, timestamp: ms })
-    expect(await at(30_000)).toBe(await at(59_999))
-    expect(await at(59_999)).not.toBe(await at(60_000))
+    expect(await codeAt('SHA1', 6, 30_000)).toBe(await codeAt('SHA1', 6, 59_999))
+    expect(await codeAt('SHA1', 6, 59_999)).not.toBe(await codeAt('SHA1', 6, 60_000))
+  })
+
+  it('uses a key that cannot be exported', async () => {
+    const key = await importHmacKey(new TextEncoder().encode(SEEDS.SHA1), 'SHA1')
+    expect(key.extractable).toBe(false)
   })
 })
 
@@ -49,5 +54,12 @@ describe('secondsRemaining', () => {
     expect(secondsRemaining(30, 1_000)).toBe(29)
     expect(secondsRemaining(30, 29_999)).toBe(1)
     expect(secondsRemaining(30, 30_000)).toBe(30)
+  })
+})
+
+describe('formatCode', () => {
+  it('splits 6 and 8 digit codes in half', () => {
+    expect(formatCode('081804')).toBe('081 804')
+    expect(formatCode('94287082')).toBe('9428 7082')
   })
 })

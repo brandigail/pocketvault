@@ -1,10 +1,11 @@
+import { AccountsScreen } from './features/accounts/AccountsScreen'
 import { LockScreen } from './features/lock/LockScreen'
 import { SetupScreen } from './features/lock/SetupScreen'
 import { useAutoLock } from './features/vault/useAutoLock'
 import { useVault } from './features/vault/useVault'
 
 export default function App() {
-  const { status, lock } = useVault()
+  const { status, key, lock } = useVault()
   useAutoLock(status === 'unlocked', lock)
 
   switch (status) {
@@ -21,13 +22,6 @@ export default function App() {
     case 'locked':
       return <LockScreen />
     case 'unlocked':
-      return (
-        <main className="mx-auto flex min-h-full max-w-md flex-col items-center justify-center gap-4 p-4">
-          <h1 className="text-2xl font-semibold">Vault unlocked</h1>
-          <button type="button" onClick={lock} className="h-11 rounded-lg bg-teal-700 px-6 font-medium text-white hover:bg-teal-800">
-            Lock now
-          </button>
-        </main>
-      )
+      return key ? <AccountsScreen vaultKey={key} /> : null
   }
 }
