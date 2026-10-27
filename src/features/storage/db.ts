@@ -29,14 +29,6 @@ export function openDb(): Promise<IDBDatabase> {
   return dbPromise
 }
 
-/** Closes the connection and forgets it. Used by tests and the "reset vault" flow. */
-export async function closeDb(): Promise<void> {
-  if (!dbPromise) return
-  const db = await dbPromise
-  db.close()
-  dbPromise = null
-}
-
 export function promisify<T>(request: IDBRequest<T>): Promise<T> {
   return new Promise((resolve, reject) => {
     request.onsuccess = () => resolve(request.result)
