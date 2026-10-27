@@ -11,8 +11,8 @@
 - [x] 9. Camera QR scanning with jsqr
 - [x] 10. Edit, delete and reorder accounts
 - [x] 11. Seed demo accounts
-- [ ] 12. Offline verification (airplane mode)
-- [ ] 13. PWA manifest, offline shell, update banner
+- [x] 12. Offline verification (airplane mode)
+- [x] 13. PWA manifest, offline shell, update banner
 - [ ] 14. Mobile polish at 375px
 - [ ] 15. Quality gate: `npm run build`, lint and `tsc --noEmit` all pass; no console errors; core flow tested at 375px and desktop
 - [ ] 16. README: pitch, features, stack, architecture notes, screenshot placeholders, run steps, 3-bullet "what to demo to a recruiter", Phase 2 list
