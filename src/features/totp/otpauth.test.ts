@@ -44,6 +44,10 @@ describe('parseOtpauthUri', () => {
     expect(() => parseOtpauthUri('https://example.com')).toThrow('Not an otpauth link')
   })
 
+  it('explains Google Authenticator export codes', () => {
+    expect(() => parseOtpauthUri('otpauth-migration://offline?data=abc')).toThrow('export code')
+  })
+
   it('rejects HOTP with a specific message', () => {
     expect(() => parseOtpauthUri(`otpauth://hotp/X:y?secret=${SECRET}&counter=1`)).toThrow('HOTP')
   })

@@ -8,7 +8,7 @@
 - [x] 6. Lock screen with lockout delay and auto-lock
 - [x] 7. Account list with live codes and countdown ring
 - [x] 8. Add account: manual entry and URI paste
-- [ ] 9. Camera QR scanning with jsqr
+- [x] 9. Camera QR scanning with jsqr
 - [ ] 10. Edit, delete and reorder accounts
 - [ ] 11. Seed demo accounts
 - [ ] 12. Offline verification (airplane mode)

@@ -22,6 +22,9 @@ export function parseOtpauthUri(uri: string): ParsedOtpauth {
   } catch {
     throw new Error('Not a valid otpauth link')
   }
+  if (url.protocol === 'otpauth-migration:') {
+    throw new Error("That is a Google Authenticator export code, which isn't supported. Scan each service's own QR code instead.")
+  }
   if (url.protocol !== 'otpauth:') throw new Error('Not an otpauth link')
   if (url.host === 'hotp') throw new Error('Counter-based (HOTP) accounts are not supported yet')
   if (url.host !== 'totp') throw new Error('Unsupported otpauth type')
