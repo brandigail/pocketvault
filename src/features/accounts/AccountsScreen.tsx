@@ -53,6 +53,9 @@ export function AccountsScreen({ vaultKey }: { vaultKey: CryptoKey }) {
   const accounts = state.status === 'ready' ? state.accounts : []
   const sorted = accounts.map((entry) => entry.account)
 
+  // Deleting the last account hides the Edit/Done button, so leave edit mode instead of getting stuck in it.
+  if (editing && state.status === 'ready' && accounts.length === 0) setEditing(false)
+
   return (
     <div className="mx-auto flex min-h-full w-full max-w-md flex-col px-4 pb-24">
       <header className="flex items-center justify-between gap-2 py-4">
