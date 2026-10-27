@@ -1,8 +1,13 @@
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
 
-/** Decodes RFC 4648 Base32. Tolerates lowercase, spaces, dashes and `=` padding, as authenticator apps show secrets that way. */
+/** Canonical form of a Base32 secret: uppercase, without spaces, dashes or `=` padding. */
+export function normalizeBase32(input: string): string {
+  return input.replace(/[\s-]/g, '').replace(/=+$/, '').toUpperCase()
+}
+
+/** Decodes RFC 4648 Base32. Accepts the loose formats that services display secrets in. */
 export function decodeBase32(input: string): Uint8Array<ArrayBuffer> {
-  const clean = input.replace(/[\s-]/g, '').replace(/=+$/, '').toUpperCase()
+  const clean = normalizeBase32(input)
   if (clean.length === 0) throw new Error('Secret is empty')
 
   const bytes: number[] = []
