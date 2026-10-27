@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNow } from '../../shared/useNow'
 import type { TokenAccount } from '../../types'
+import { SettingsScreen } from '../settings/SettingsScreen'
 import { useVault } from '../vault/useVault'
 import { AccountEditRow } from './AccountEditRow'
 import { AccountRow } from './AccountRow'
@@ -24,6 +25,7 @@ export function AccountsScreen({ vaultKey }: { vaultKey: CryptoKey }) {
   const [notice, showNotice] = useNotice()
   const actions = useAccountActions(reload, showNotice)
   const [adding, setAdding] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [editing, setEditing] = useState(false)
   const [editingDetails, setEditingDetails] = useState<TokenAccount | null>(null)
   const [deleting, setDeleting] = useState<TokenAccount | null>(null)
@@ -53,6 +55,18 @@ export function AccountsScreen({ vaultKey }: { vaultKey: CryptoKey }) {
     )
   }
 
+  if (settingsOpen) {
+    return (
+      <SettingsScreen
+        vaultKey={vaultKey}
+        onClose={() => {
+          setSettingsOpen(false)
+          reload() // an import may have added accounts
+        }}
+      />
+    )
+  }
+
   const accounts = state.status === 'ready' ? state.accounts : []
   const sorted = accounts.map((entry) => entry.account)
   const folders = folderNames(sorted)
@@ -71,6 +85,7 @@ export function AccountsScreen({ vaultKey }: { vaultKey: CryptoKey }) {
         onAdd={() => setAdding(true)}
         onToggleEdit={() => setEditing((value) => !value)}
         onLock={lock}
+        onSettings={() => setSettingsOpen(true)}
       />
 
       <main className="flex flex-1 flex-col gap-3">

@@ -23,6 +23,6 @@
 
 - [x] 19. HOTP: RFC 4226 engine with test vectors, otpauth `hotp` links, counter stored per account, "next code" button
 - [x] 20. Folders and search: folder per account, folder chips, search box, compact header with a settings button
-- [ ] 21. Settings screen and encrypted backup: password-protected export (PIN re-check) and import with duplicate skipping
+- [x] 21. Settings screen and encrypted backup: password-protected export (PIN re-check) and import with duplicate skipping
 - [ ] 22. Biometric unlock (optional): WebAuthn PRF wraps the vault key, enable/disable in settings, PIN always works
 - [ ] 23. Phase 2 quality gate, README and security notes, deploy, verify on the live URL

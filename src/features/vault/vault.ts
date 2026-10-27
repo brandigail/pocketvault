@@ -54,8 +54,21 @@ export async function attemptUnlock(pin: string, now = Date.now()): Promise<Unlo
   return { status: 'wrong-pin', failedAttempts, lockedUntil }
 }
 
+/**
+ * Checks a PIN without touching the lockout counters. For re-confirming the PIN inside an unlocked session
+ * (before exporting secrets); the unlock screen uses attemptUnlock, which enforces the lockout.
+ */
+export async function verifyPin(pin: string): Promise<boolean> {
+  const meta = await getMeta()
+  if (!meta) return false
+  return checkVerifier(await deriveKey(pin, meta.salt, meta.iterations), meta.verifier)
+}
+
 /** Encrypts the secret and stores the account. The plaintext secret is never written anywhere. */
-export async function addAccount(key: CryptoKey, input: ParsedOtpauth): Promise<TokenAccount> {
+/** What addAccount needs: the parsed link or form values, plus an optional folder. */
+export type NewAccount = ParsedOtpauth & { folder?: string }
+
+export async function addAccount(key: CryptoKey, input: NewAccount): Promise<TokenAccount> {
   const { secret, ...details } = input
   const sortOrder = (await getAccounts()).reduce((max, existing) => Math.max(max, existing.sortOrder ?? 0), 0) + 1
   const account: TokenAccount = { id: crypto.randomUUID(), ...details, createdAt: new Date().toISOString(), sortOrder }
