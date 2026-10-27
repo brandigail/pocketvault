@@ -25,4 +25,4 @@
 - [x] 20. Folders and search: folder per account, folder chips, search box, compact header with a settings button
 - [x] 21. Settings screen and encrypted backup: password-protected export (PIN re-check) and import with duplicate skipping
 - [x] 22. Biometric unlock (optional): WebAuthn PRF wraps the vault key, enable/disable in settings, PIN always works
-- [ ] 23. Phase 2 quality gate, README and security notes, deploy, verify on the live URL
+- [x] 23. Phase 2 quality gate, README and security notes, deploy, verify on the live URL
