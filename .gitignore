@@ -21,3 +21,4 @@ Thumbs.db
 npm-debug.log*
 .vscode/*
 !.vscode/extensions.json
+dev-dist/
