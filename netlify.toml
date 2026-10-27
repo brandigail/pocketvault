@@ -13,3 +13,11 @@
     Permissions-Policy = "camera=(self)"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "no-referrer"
+    # Everything is same-origin. The app never talks to another host, so connect-src is 'self' too.
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+
+# The service worker must always be revalidated so updates are picked up.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
