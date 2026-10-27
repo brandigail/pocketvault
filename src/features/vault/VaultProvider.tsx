@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { getMeta } from '../storage/vaultStore'
 import { VaultContext, type VaultContextValue, type VaultStatus } from './VaultContext'
+import { seedDemoAccounts } from './demo'
 import { attemptUnlock, setupVault } from './vault'
 
 export function VaultProvider({ children }: { children: ReactNode }) {
@@ -24,8 +25,10 @@ export function VaultProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const setup = useCallback(async (pin: string) => {
-    setKey(await setupVault(pin))
+  const setup = useCallback(async (pin: string, withDemo: boolean) => {
+    const newKey = await setupVault(pin)
+    if (withDemo) await seedDemoAccounts(newKey)
+    setKey(newKey)
     setLockedUntil(null)
     setStatus('unlocked')
   }, [])

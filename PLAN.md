@@ -10,7 +10,7 @@
 - [x] 8. Add account: manual entry and URI paste
 - [x] 9. Camera QR scanning with jsqr
 - [x] 10. Edit, delete and reorder accounts
-- [ ] 11. Seed demo accounts
+- [x] 11. Seed demo accounts
 - [ ] 12. Offline verification (airplane mode)
 - [ ] 13. PWA manifest, offline shell, update banner
 - [ ] 14. Mobile polish at 375px

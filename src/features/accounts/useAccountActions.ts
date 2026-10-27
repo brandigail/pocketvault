@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import type { TokenAccount } from '../../types'
 import { deleteAccount, updateAccount, updateAccounts } from '../storage/vaultStore'
+import { seedDemoAccounts } from '../vault/demo'
 import { moveAccount } from './reorder'
 
 /** Rename, delete and reorder, each followed by a reload of the list. Failures become a notice. */
@@ -28,5 +29,7 @@ export function useAccountActions(reload: () => void, showNotice: (message: stri
     [run],
   )
 
-  return { rename, remove, move }
+  const loadDemo = useCallback((vaultKey: CryptoKey) => run(() => seedDemoAccounts(vaultKey), 'Demo accounts added'), [run])
+
+  return { rename, remove, move, loadDemo }
 }

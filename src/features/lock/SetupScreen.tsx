@@ -9,6 +9,7 @@ export function SetupScreen() {
   const [pin, setPin] = useState('')
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [withDemo, setWithDemo] = useState(true)
   const [busy, setBusy] = useState(false)
 
   async function handleSubmit(event: FormEvent) {
@@ -19,7 +20,7 @@ export function SetupScreen() {
     setError(null)
     setBusy(true)
     try {
-      await setup(pin)
+      await setup(pin, withDemo)
     } catch {
       setError('Could not create the vault. Check that your browser allows site storage.')
       setBusy(false)
@@ -31,6 +32,19 @@ export function SetupScreen() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <PinField id="pin" label="PIN" value={pin} onChange={setPin} autoComplete="new-password" autoFocus disabled={busy} />
         <PinField id="confirm" label="Confirm PIN" value={confirm} onChange={setConfirm} autoComplete="new-password" disabled={busy} />
+        <label className="flex items-start gap-3 text-sm">
+          <input
+            type="checkbox"
+            checked={withDemo}
+            onChange={(event) => setWithDemo(event.target.checked)}
+            disabled={busy}
+            className="mt-0.5 h-5 w-5 accent-teal-700"
+          />
+          <span>
+            Add a few demo accounts to look around
+            <span className="block text-xs text-slate-500 dark:text-slate-400">Fake secrets, labelled Demo. You can delete them any time.</span>
+          </span>
+        </label>
         {error && (
           <p role="alert" className="text-sm text-red-600 dark:text-red-400">
             {error}

@@ -89,6 +89,9 @@ export function AccountsScreen({ vaultKey }: { vaultKey: CryptoKey }) {
             <button type="button" onClick={() => setAdding(true)} className={PRIMARY}>
               Add your first account
             </button>
+            <button type="button" onClick={() => void actions.loadDemo(vaultKey)} className={OUTLINE}>
+              Load demo accounts
+            </button>
           </div>
         )}
         {accounts.length > 0 && (

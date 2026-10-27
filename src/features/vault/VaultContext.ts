@@ -8,7 +8,8 @@ export interface VaultContextValue {
   /** The derived key. Held in memory only, and null whenever the vault is not unlocked. */
   key: CryptoKey | null
   lockedUntil: number | null
-  setup: (pin: string) => Promise<void>
+  /** Creates the vault and unlocks it, optionally filling it with fake demo accounts. */
+  setup: (pin: string, withDemo: boolean) => Promise<void>
   unlock: (pin: string) => Promise<UnlockResult>
   lock: () => void
 }
