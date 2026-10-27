@@ -46,6 +46,18 @@ export function updateAccounts(accounts: TokenAccount[]): Promise<void> {
   })
 }
 
+/** Adds one to an HOTP account's counter in a single transaction, so rapid taps each count. Resolves to the new counter. */
+export function incrementCounter(accountId: string): Promise<number> {
+  return withTransaction([STORES.accounts], 'readwrite', async (tx) => {
+    const store = tx.objectStore(STORES.accounts)
+    const account = await promisify(store.get(accountId) as IDBRequest<TokenAccount | undefined>)
+    if (!account) throw new Error('Account not found')
+    const counter = (account.counter ?? 0) + 1
+    await promisify(store.put({ ...account, counter }))
+    return counter
+  })
+}
+
 export function deleteAccount(accountId: string): Promise<void> {
   return withTransaction([STORES.accounts, STORES.secrets], 'readwrite', async (tx) => {
     await Promise.all([

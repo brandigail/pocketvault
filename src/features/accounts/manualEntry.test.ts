@@ -8,6 +8,8 @@ const valid: ManualEntry = {
   algorithm: 'SHA1',
   digits: 6,
   period: '30',
+  type: 'totp',
+  counter: '0',
 }
 
 describe('toAccountInput', () => {
@@ -40,5 +42,14 @@ describe('toAccountInput', () => {
     for (const period of ['', '0', '301', '1.5', 'abc']) {
       expect(() => toAccountInput({ ...valid, period })).toThrow('Period')
     }
+  })
+
+  it('builds an HOTP account with its counter and ignores the period', () => {
+    expect(toAccountInput({ ...valid, type: 'hotp', counter: '3', period: 'abc' })).toMatchObject({ type: 'hotp', counter: 3, period: 30 })
+  })
+
+  it('rejects a bad HOTP counter', () => {
+    expect(() => toAccountInput({ ...valid, type: 'hotp', counter: '-2' })).toThrow('counter')
+    expect(() => toAccountInput({ ...valid, type: 'hotp', counter: '' })).toThrow('counter')
   })
 })

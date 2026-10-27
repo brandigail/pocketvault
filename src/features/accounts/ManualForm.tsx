@@ -10,7 +10,7 @@ interface ManualFormProps {
   onError: (message: string) => void
 }
 
-const INITIAL: ManualEntry = { issuer: '', label: '', secret: '', algorithm: 'SHA1', digits: 6, period: '30' }
+const INITIAL: ManualEntry = { issuer: '', label: '', secret: '', algorithm: 'SHA1', digits: 6, period: '30', type: 'totp', counter: '0' }
 const SELECT_CLASS =
   'h-12 min-w-0 rounded-lg border text-base border-slate-300 bg-white px-2 focus:border-teal-600 focus:outline-2 focus:outline-teal-600 dark:border-slate-600 dark:bg-slate-800'
 
@@ -46,26 +46,42 @@ export function ManualForm({ disabled, onSubmit, onError }: ManualFormProps) {
 
       <details className="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
         <summary className="cursor-pointer py-3.5 text-sm font-medium">Advanced</summary>
-        <div className="mt-3 grid grid-cols-[5fr_3fr_4fr] gap-2">
+        <div className="mt-3 flex flex-col gap-3">
           <label className="flex min-w-0 flex-col gap-1.5 text-sm font-medium">
-            Algorithm
-            <select value={entry.algorithm} onChange={(e) => update('algorithm', e.target.value as TotpAlgorithm)} className={SELECT_CLASS} disabled={disabled}>
-              <option value="SHA1">SHA-1</option>
-              <option value="SHA256">SHA-256</option>
-              <option value="SHA512">SHA-512</option>
+            Type
+            <select value={entry.type} onChange={(e) => update('type', e.target.value === 'hotp' ? 'hotp' : 'totp')} className={SELECT_CLASS} disabled={disabled}>
+              <option value="totp">Time based (TOTP)</option>
+              <option value="hotp">Counter based (HOTP)</option>
             </select>
           </label>
-          <label className="flex min-w-0 flex-col gap-1.5 text-sm font-medium">
-            Digits
-            <select value={entry.digits} onChange={(e) => update('digits', e.target.value === '8' ? 8 : 6)} className={SELECT_CLASS} disabled={disabled}>
-              <option value={6}>6</option>
-              <option value={8}>8</option>
-            </select>
-          </label>
-          <label className="flex min-w-0 flex-col gap-1.5 text-sm font-medium">
-            Period (s)
-            <input value={entry.period} onChange={(e) => update('period', e.target.value)} inputMode="numeric" className={SELECT_CLASS} disabled={disabled} />
-          </label>
+          <div className="grid grid-cols-[5fr_3fr_4fr] gap-2">
+            <label className="flex min-w-0 flex-col gap-1.5 text-sm font-medium">
+              Algorithm
+              <select value={entry.algorithm} onChange={(e) => update('algorithm', e.target.value as TotpAlgorithm)} className={SELECT_CLASS} disabled={disabled}>
+                <option value="SHA1">SHA-1</option>
+                <option value="SHA256">SHA-256</option>
+                <option value="SHA512">SHA-512</option>
+              </select>
+            </label>
+            <label className="flex min-w-0 flex-col gap-1.5 text-sm font-medium">
+              Digits
+              <select value={entry.digits} onChange={(e) => update('digits', e.target.value === '8' ? 8 : 6)} className={SELECT_CLASS} disabled={disabled}>
+                <option value={6}>6</option>
+                <option value={8}>8</option>
+              </select>
+            </label>
+            {entry.type === 'hotp' ? (
+              <label className="flex min-w-0 flex-col gap-1.5 text-sm font-medium">
+                Counter
+                <input value={entry.counter} onChange={(e) => update('counter', e.target.value)} inputMode="numeric" className={SELECT_CLASS} disabled={disabled} />
+              </label>
+            ) : (
+              <label className="flex min-w-0 flex-col gap-1.5 text-sm font-medium">
+                Period (s)
+                <input value={entry.period} onChange={(e) => update('period', e.target.value)} inputMode="numeric" className={SELECT_CLASS} disabled={disabled} />
+              </label>
+            )}
+          </div>
         </div>
       </details>
 

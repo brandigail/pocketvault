@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import type { TokenAccount } from '../../types'
-import { deleteAccount, updateAccount, updateAccounts } from '../storage/vaultStore'
+import { deleteAccount, incrementCounter, updateAccount, updateAccounts } from '../storage/vaultStore'
 import { seedDemoAccounts } from '../vault/demo'
 import { moveAccount } from './reorder'
 
@@ -23,6 +23,7 @@ export function useAccountActions(reload: () => void, showNotice: (message: stri
     (account: TokenAccount, issuer: string, label: string) => run(() => updateAccount({ ...account, issuer, label }), 'Account renamed'),
     [run],
   )
+  const nextCounter = useCallback((account: TokenAccount) => run(async () => void (await incrementCounter(account.id))), [run])
   const remove = useCallback((accountId: string) => run(() => deleteAccount(accountId), 'Account deleted'), [run])
   const move = useCallback(
     (sorted: TokenAccount[], accountId: string, direction: -1 | 1) => run(() => updateAccounts(moveAccount(sorted, accountId, direction))),
@@ -31,5 +32,5 @@ export function useAccountActions(reload: () => void, showNotice: (message: stri
 
   const loadDemo = useCallback((vaultKey: CryptoKey) => run(() => seedDemoAccounts(vaultKey), 'Demo accounts added'), [run])
 
-  return { rename, remove, move, loadDemo }
+  return { rename, nextCounter, remove, move, loadDemo }
 }

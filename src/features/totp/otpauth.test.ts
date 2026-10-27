@@ -48,8 +48,21 @@ describe('parseOtpauthUri', () => {
     expect(() => parseOtpauthUri('otpauth-migration://offline?data=abc')).toThrow('export code')
   })
 
-  it('rejects HOTP with a specific message', () => {
-    expect(() => parseOtpauthUri(`otpauth://hotp/X:y?secret=${SECRET}&counter=1`)).toThrow('HOTP')
+  it('parses an HOTP link with its starting counter', () => {
+    const parsed = parseOtpauthUri(`otpauth://hotp/X:y?secret=${SECRET}&counter=7&digits=8`)
+    expect(parsed).toMatchObject({ type: 'hotp', counter: 7, digits: 8, issuer: 'X', label: 'y' })
+  })
+
+  it('leaves TOTP links without a type or counter', () => {
+    const parsed = parseOtpauthUri(`otpauth://totp/X:y?secret=${SECRET}`)
+    expect(parsed.type).toBeUndefined()
+    expect(parsed.counter).toBeUndefined()
+  })
+
+  it('requires a valid counter on HOTP links', () => {
+    expect(() => parseOtpauthUri(`otpauth://hotp/X:y?secret=${SECRET}`)).toThrow('counter')
+    expect(() => parseOtpauthUri(`otpauth://hotp/X:y?secret=${SECRET}&counter=-1`)).toThrow('counter')
+    expect(() => parseOtpauthUri(`otpauth://hotp/X:y?secret=${SECRET}&counter=1.5`)).toThrow('counter')
   })
 
   it('rejects a missing or invalid secret', () => {

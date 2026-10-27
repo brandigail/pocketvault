@@ -1,4 +1,4 @@
-import type { TotpAlgorithm } from '../../types'
+import type { OtpType, TotpAlgorithm } from '../../types'
 import { decodeBase32, normalizeBase32 } from './base32'
 
 export interface ParsedOtpauth {
@@ -9,12 +9,16 @@ export interface ParsedOtpauth {
   algorithm: TotpAlgorithm
   digits: 6 | 8
   period: number
+  /** Missing means TOTP. */
+  type?: OtpType
+  /** HOTP only: the starting counter from the link. */
+  counter?: number
 }
 
 const ALGORITHMS: readonly TotpAlgorithm[] = ['SHA1', 'SHA256', 'SHA512']
 const MAX_PERIOD = 300
 
-/** Parses a Google Authenticator style `otpauth://totp/...` URI. Throws an Error with a user-readable message. */
+/** Parses a Google Authenticator style `otpauth://totp/...` or `otpauth://hotp/...` URI. Throws an Error with a user-readable message. */
 export function parseOtpauthUri(uri: string): ParsedOtpauth {
   let url: URL
   try {
@@ -26,8 +30,8 @@ export function parseOtpauthUri(uri: string): ParsedOtpauth {
     throw new Error("That is a Google Authenticator export code, which isn't supported. Scan each service's own QR code instead.")
   }
   if (url.protocol !== 'otpauth:') throw new Error('Not an otpauth link')
-  if (url.host === 'hotp') throw new Error('Counter-based (HOTP) accounts are not supported yet')
-  if (url.host !== 'totp') throw new Error('Unsupported otpauth type')
+  if (url.host !== 'totp' && url.host !== 'hotp') throw new Error('Unsupported otpauth type')
+  const type: OtpType = url.host
 
   const params = url.searchParams
   const rawSecret = params.get('secret')
@@ -53,7 +57,17 @@ export function parseOtpauthUri(uri: string): ParsedOtpauth {
     algorithm: parseAlgorithm(params.get('algorithm')),
     digits: parseDigits(params.get('digits')),
     period: parsePeriod(params.get('period')),
+    ...(type === 'hotp' ? { type, counter: parseCounter(params.get('counter')) } : {}),
   }
+}
+
+/** Parses an HOTP counter. Throws a user-readable Error unless it is a whole number from 0 to 2^53. */
+export function parseCounter(value: string | null): number {
+  const counter = Number(value)
+  if (value === null || value.trim() === '' || !Number.isSafeInteger(counter) || counter < 0) {
+    throw new Error('A counter-based link needs a counter that is a whole number, 0 or more')
+  }
+  return counter
 }
 
 function parseAlgorithm(value: string | null): TotpAlgorithm {

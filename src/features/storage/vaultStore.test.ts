@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto'
 import { beforeEach, describe, expect, it } from 'vitest'
 import type { StoredSecret, TokenAccount, VaultMeta } from '../../types'
-import { clearVault, deleteAccount, getAccounts, getAllSecrets, getMeta, getSecret, saveAccount, saveMeta, updateAccount, updateAccounts } from './vaultStore'
+import { clearVault, deleteAccount, getAccounts, getAllSecrets, getMeta, getSecret, incrementCounter, saveAccount, saveMeta, updateAccount, updateAccounts } from './vaultStore'
 
 const account = (id: string): TokenAccount => ({
   id,
@@ -62,5 +62,17 @@ describe('vaultStore', () => {
     expect(await getAccounts()).toEqual([])
     expect(await getAllSecrets()).toEqual([])
     expect(await getMeta()).toBeUndefined()
+  })
+
+  it('counts every concurrent counter increment', async () => {
+    await saveAccount({ ...account('h'), type: 'hotp', counter: 4 }, secret('h'))
+    await Promise.all([incrementCounter('h'), incrementCounter('h'), incrementCounter('h')])
+    expect((await getAccounts())[0]?.counter).toBe(7)
+  })
+
+  it('starts a missing counter at 1 and rejects an unknown account', async () => {
+    await saveAccount(account('t'), secret('t'))
+    expect(await incrementCounter('t')).toBe(1)
+    await expect(incrementCounter('nope')).rejects.toThrow('not found')
   })
 })

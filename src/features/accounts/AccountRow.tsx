@@ -1,5 +1,7 @@
+import type { TokenAccount } from '../../types'
 import { formatCode, secondsRemaining } from '../totp/totp'
 import { CountdownRing } from './CountdownRing'
+import { HotpRow } from './HotpRow'
 import { useTotpCode } from './useTotpCode'
 import type { UnlockedAccount } from './useVaultAccounts'
 
@@ -7,9 +9,15 @@ interface AccountRowProps {
   entry: UnlockedAccount
   now: number
   onCopy: (code: string) => void
+  onNext: (account: TokenAccount) => void
 }
 
-export function AccountRow({ entry, now, onCopy }: AccountRowProps) {
+export function AccountRow({ entry, now, onCopy, onNext }: AccountRowProps) {
+  if (entry.account.type === 'hotp') return <HotpRow entry={entry} onCopy={onCopy} onNext={onNext} />
+  return <TotpRow entry={entry} now={now} onCopy={onCopy} />
+}
+
+function TotpRow({ entry, now, onCopy }: Omit<AccountRowProps, 'onNext'>) {
   const { account, hmacKey } = entry
   const code = useTotpCode(hmacKey, account.digits, account.period, now)
 

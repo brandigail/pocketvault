@@ -111,7 +111,7 @@ export function AccountsScreen({ vaultKey }: { vaultKey: CryptoKey }) {
                   onDelete={() => setDeleting(entry.account)}
                 />
               ) : (
-                <AccountRow key={entry.account.id} entry={entry} now={now} onCopy={copy} />
+                <AccountRow key={entry.account.id} entry={entry} now={now} onCopy={copy} onNext={actions.nextCounter} />
               ),
             )}
           </ul>
