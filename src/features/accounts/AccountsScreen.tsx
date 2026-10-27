@@ -4,17 +4,18 @@ import type { TokenAccount } from '../../types'
 import { useVault } from '../vault/useVault'
 import { AccountEditRow } from './AccountEditRow'
 import { AccountRow } from './AccountRow'
+import { AccountsHeader } from './AccountsHeader'
+import { AccountsToolbar } from './AccountsToolbar'
 import { AddAccountScreen } from './AddAccountScreen'
 import { DeleteDialog } from './DeleteDialog'
-import { RenameDialog } from './RenameDialog'
+import { EditDetailsDialog } from './EditDetailsDialog'
+import { OUTLINE, PRIMARY } from './buttonStyles'
+import { filterAccounts, folderNames } from './filter'
 import { useAccountActions } from './useAccountActions'
 import { useNotice } from './useNotice'
 import { useVaultAccounts } from './useVaultAccounts'
 
 const TICK_MS = 250
-const BUTTON = 'h-11 rounded-lg px-3 text-sm font-medium min-[360px]:px-4'
-const PRIMARY = `${BUTTON} bg-teal-700 text-white hover:bg-teal-800`
-const OUTLINE = `${BUTTON} border border-slate-300 hover:border-teal-600 dark:border-slate-600`
 
 export function AccountsScreen({ vaultKey }: { vaultKey: CryptoKey }) {
   const { lock } = useVault()
@@ -24,8 +25,10 @@ export function AccountsScreen({ vaultKey }: { vaultKey: CryptoKey }) {
   const actions = useAccountActions(reload, showNotice)
   const [adding, setAdding] = useState(false)
   const [editing, setEditing] = useState(false)
-  const [renaming, setRenaming] = useState<TokenAccount | null>(null)
+  const [editingDetails, setEditingDetails] = useState<TokenAccount | null>(null)
   const [deleting, setDeleting] = useState<TokenAccount | null>(null)
+  const [query, setQuery] = useState('')
+  const [chosenFolder, setChosenFolder] = useState<string | null>(null)
 
   async function copy(code: string) {
     try {
@@ -52,32 +55,23 @@ export function AccountsScreen({ vaultKey }: { vaultKey: CryptoKey }) {
 
   const accounts = state.status === 'ready' ? state.accounts : []
   const sorted = accounts.map((entry) => entry.account)
+  const folders = folderNames(sorted)
+  // A folder that no longer exists (renamed, or its last account moved out) falls back to "All".
+  const folder = chosenFolder !== null && folders.some((name) => name.toLowerCase() === chosenFolder.toLowerCase()) ? chosenFolder : null
+  const visible = editing ? accounts : filterAccounts(accounts, query, folder)
 
   // Deleting the last account hides the Edit/Done button, so leave edit mode instead of getting stuck in it.
   if (editing && state.status === 'ready' && accounts.length === 0) setEditing(false)
 
   return (
     <div className="mx-auto flex min-h-full w-full max-w-md flex-col px-4 pb-24">
-      <header className="flex items-center justify-between gap-2 py-4">
-        <h1 className="text-lg font-semibold min-[360px]:text-xl">PocketVault</h1>
-        <div className="flex gap-2">
-          {!editing && (
-            <button type="button" onClick={() => setAdding(true)} className={PRIMARY}>
-              Add
-            </button>
-          )}
-          {accounts.length > 0 && (
-            <button type="button" onClick={() => setEditing((value) => !value)} className={editing ? PRIMARY : OUTLINE}>
-              {editing ? 'Done' : 'Edit'}
-            </button>
-          )}
-          {!editing && (
-            <button type="button" onClick={lock} className={OUTLINE}>
-              Lock
-            </button>
-          )}
-        </div>
-      </header>
+      <AccountsHeader
+        editing={editing}
+        hasAccounts={accounts.length > 0}
+        onAdd={() => setAdding(true)}
+        onToggleEdit={() => setEditing((value) => !value)}
+        onLock={lock}
+      />
 
       <main className="flex flex-1 flex-col gap-3">
         {state.status === 'loading' && <p className="py-8 text-center text-slate-500 dark:text-slate-400">Decrypting…</p>}
@@ -97,17 +91,21 @@ export function AccountsScreen({ vaultKey }: { vaultKey: CryptoKey }) {
             </button>
           </div>
         )}
-        {accounts.length > 0 && (
+        {accounts.length > 0 && !editing && (
+          <AccountsToolbar query={query} onQueryChange={setQuery} folders={folders} folder={folder} onFolderChange={setChosenFolder} />
+        )}
+        {accounts.length > 0 && visible.length === 0 && <p className="py-8 text-center text-slate-500 dark:text-slate-400">No accounts match.</p>}
+        {visible.length > 0 && (
           <ul className="flex flex-col gap-3">
-            {accounts.map((entry, index) =>
+            {visible.map((entry, index) =>
               editing ? (
                 <AccountEditRow
                   key={entry.account.id}
                   account={entry.account}
                   isFirst={index === 0}
-                  isLast={index === accounts.length - 1}
+                  isLast={index === visible.length - 1}
                   onMove={(direction) => actions.move(sorted, entry.account.id, direction)}
-                  onRename={() => setRenaming(entry.account)}
+                  onEditDetails={() => setEditingDetails(entry.account)}
                   onDelete={() => setDeleting(entry.account)}
                 />
               ) : (
@@ -118,13 +116,14 @@ export function AccountsScreen({ vaultKey }: { vaultKey: CryptoKey }) {
         )}
       </main>
 
-      {renaming && (
-        <RenameDialog
-          account={renaming}
-          onClose={() => setRenaming(null)}
-          onSave={(issuer, label) => {
-            void actions.rename(renaming, issuer, label)
-            setRenaming(null)
+      {editingDetails && (
+        <EditDetailsDialog
+          account={editingDetails}
+          folders={folders}
+          onClose={() => setEditingDetails(null)}
+          onSave={(details) => {
+            void actions.saveDetails(editingDetails, details)
+            setEditingDetails(null)
           }}
         />
       )}

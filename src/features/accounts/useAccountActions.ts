@@ -2,9 +2,10 @@ import { useCallback } from 'react'
 import type { TokenAccount } from '../../types'
 import { deleteAccount, incrementCounter, updateAccount, updateAccounts } from '../storage/vaultStore'
 import { seedDemoAccounts } from '../vault/demo'
+import type { AccountDetails } from './EditDetailsDialog'
 import { moveAccount } from './reorder'
 
-/** Rename, delete and reorder, each followed by a reload of the list. Failures become a notice. */
+/** Edit details, delete and reorder, each followed by a reload of the list. Failures become a notice. */
 export function useAccountActions(reload: () => void, showNotice: (message: string) => void) {
   const run = useCallback(
     async (action: () => Promise<void>, success?: string) => {
@@ -19,8 +20,13 @@ export function useAccountActions(reload: () => void, showNotice: (message: stri
     [reload, showNotice],
   )
 
-  const rename = useCallback(
-    (account: TokenAccount, issuer: string, label: string) => run(() => updateAccount({ ...account, issuer, label }), 'Account renamed'),
+  const saveDetails = useCallback(
+    (account: TokenAccount, { issuer, label, folder }: AccountDetails) => {
+      const next: TokenAccount = { ...account, issuer, label }
+      if (folder) next.folder = folder
+      else delete next.folder
+      return run(() => updateAccount(next), 'Details saved')
+    },
     [run],
   )
   const nextCounter = useCallback((account: TokenAccount) => run(async () => void (await incrementCounter(account.id))), [run])
@@ -32,5 +38,5 @@ export function useAccountActions(reload: () => void, showNotice: (message: stri
 
   const loadDemo = useCallback((vaultKey: CryptoKey) => run(() => seedDemoAccounts(vaultKey), 'Demo accounts added'), [run])
 
-  return { rename, nextCounter, remove, move, loadDemo }
+  return { saveDetails, nextCounter, remove, move, loadDemo }
 }
