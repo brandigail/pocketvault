@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto'
 import { beforeEach, describe, expect, it } from 'vitest'
 import type { StoredSecret, TokenAccount, VaultMeta } from '../../types'
-import { clearVault, deleteAccount, getAccounts, getAllSecrets, getMeta, getSecret, saveAccount, saveMeta, updateAccount } from './vaultStore'
+import { clearVault, deleteAccount, getAccounts, getAllSecrets, getMeta, getSecret, saveAccount, saveMeta, updateAccount, updateAccounts } from './vaultStore'
 
 const account = (id: string): TokenAccount => ({
   id,
@@ -11,6 +11,7 @@ const account = (id: string): TokenAccount => ({
   digits: 6,
   period: 30,
   createdAt: '2026-01-01T00:00:00.000Z',
+  sortOrder: 1,
 })
 const secret = (accountId: string): StoredSecret => ({ accountId, ciphertext: 'Y2lwaGVy', iv: 'aXY=' })
 const meta: VaultMeta = { salt: 'c2FsdA==', iterations: 600000, verifier: 'dmVy', failedAttempts: 0, lockedUntil: null }
@@ -30,6 +31,14 @@ describe('vaultStore', () => {
     await updateAccount({ ...account('a'), label: 'renamed' })
     expect((await getAccounts())[0]?.label).toBe('renamed')
     expect(await getSecret('a')).toEqual(secret('a'))
+  })
+
+  it('updates several accounts at once', async () => {
+    await saveAccount(account('a'), secret('a'))
+    await saveAccount(account('b'), secret('b'))
+    await updateAccounts([{ ...account('a'), sortOrder: 5 }, { ...account('b'), sortOrder: 4 }])
+    const orders = Object.fromEntries((await getAccounts()).map((a) => [a.id, a.sortOrder]))
+    expect(orders).toEqual({ a: 5, b: 4 })
   })
 
   it('deletes the account and its secret together', async () => {

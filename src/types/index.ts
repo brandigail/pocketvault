@@ -8,6 +8,8 @@ export interface TokenAccount {
   digits: 6 | 8
   period: number
   createdAt: string
+  /** Position in the list, ascending. New accounts go last. */
+  sortOrder: number
 }
 
 /** The secret is encrypted (AES-GCM), never stored in plain text. Both fields are base64. */

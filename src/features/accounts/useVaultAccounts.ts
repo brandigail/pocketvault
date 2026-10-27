@@ -36,7 +36,7 @@ export function useVaultAccounts(vaultKey: CryptoKey): { state: AccountsState; r
     let cancelled = false
     getAccounts()
       .then((accounts) => {
-        const ordered = [...accounts].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+        const ordered = [...accounts].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || a.createdAt.localeCompare(b.createdAt))
         return Promise.all(ordered.map((account) => unlockAccount(vaultKey, account)))
       })
       .then((unlocked) => {

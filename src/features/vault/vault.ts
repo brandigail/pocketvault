@@ -1,6 +1,6 @@
 import type { TokenAccount } from '../../types'
 import type { ParsedOtpauth } from '../totp/otpauth'
-import { getMeta, getSecret, saveAccount, saveMeta } from '../storage/vaultStore'
+import { getAccounts, getMeta, getSecret, saveAccount, saveMeta } from '../storage/vaultStore'
 import { PBKDF2_ITERATIONS, checkVerifier, createVerifier, decryptText, deriveKey, encryptText, randomSalt } from './crypto'
 import { lockoutDelayMs } from './lockout'
 
@@ -57,7 +57,8 @@ export async function attemptUnlock(pin: string, now = Date.now()): Promise<Unlo
 /** Encrypts the secret and stores the account. The plaintext secret is never written anywhere. */
 export async function addAccount(key: CryptoKey, input: ParsedOtpauth): Promise<TokenAccount> {
   const { secret, ...details } = input
-  const account: TokenAccount = { id: crypto.randomUUID(), ...details, createdAt: new Date().toISOString() }
+  const sortOrder = (await getAccounts()).reduce((max, existing) => Math.max(max, existing.sortOrder ?? 0), 0) + 1
+  const account: TokenAccount = { id: crypto.randomUUID(), ...details, createdAt: new Date().toISOString(), sortOrder }
   const { ciphertext, iv } = await encryptText(key, secret, account.id)
   await saveAccount(account, { accountId: account.id, ciphertext, iv })
   return account

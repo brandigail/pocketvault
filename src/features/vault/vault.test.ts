@@ -42,6 +42,13 @@ describe('vault setup and storage', () => {
     if (result.status === 'unlocked') expect(await readSecret(result.key, account.id)).toBe(SECRET)
   })
 
+  it('puts each new account after the existing ones', async () => {
+    const key = await setupVault(PIN)
+    const first = await addAccount(key, input)
+    const second = await addAccount(key, { ...input, label: 'bob' })
+    expect([first.sortOrder, second.sortOrder]).toEqual([1, 2])
+  })
+
   it('cannot read a secret with a key derived from the same PIN but a different salt', async () => {
     const key = await setupVault(PIN)
     const account = await addAccount(key, input)

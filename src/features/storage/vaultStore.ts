@@ -38,6 +38,14 @@ export function updateAccount(account: TokenAccount): Promise<void> {
   })
 }
 
+/** Updates several accounts in one transaction, e.g. after reordering. Secrets are untouched. */
+export function updateAccounts(accounts: TokenAccount[]): Promise<void> {
+  return withTransaction([STORES.accounts], 'readwrite', async (tx) => {
+    const store = tx.objectStore(STORES.accounts)
+    await Promise.all(accounts.map((account) => promisify(store.put(account))))
+  })
+}
+
 export function deleteAccount(accountId: string): Promise<void> {
   return withTransaction([STORES.accounts, STORES.secrets], 'readwrite', async (tx) => {
     await Promise.all([
