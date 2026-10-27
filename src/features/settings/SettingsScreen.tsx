@@ -1,3 +1,4 @@
+import { BiometricSettings } from './BiometricSettings'
 import { ExportBackup } from './ExportBackup'
 import { ImportBackup } from './ImportBackup'
 
@@ -20,6 +21,8 @@ export function SettingsScreen({ vaultKey, onClose }: SettingsScreenProps) {
         </button>
       </header>
 
+      <BiometricSettings />
+      <hr className="border-slate-200 dark:border-slate-700" />
       <ExportBackup vaultKey={vaultKey} />
       <hr className="border-slate-200 dark:border-slate-700" />
       <ImportBackup vaultKey={vaultKey} />

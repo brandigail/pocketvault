@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { getMeta } from '../storage/vaultStore'
+import { describeBiometricError, isBiometricEnabled, unlockWithBiometric as unlockWithDevice } from '../biometric/biometric'
 import { VaultContext, type VaultContextValue, type VaultStatus } from './VaultContext'
 import { seedDemoAccounts } from './demo'
 import { attemptUnlock, setupVault } from './vault'
@@ -8,13 +9,15 @@ export function VaultProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<VaultStatus>('loading')
   const [key, setKey] = useState<CryptoKey | null>(null)
   const [lockedUntil, setLockedUntil] = useState<number | null>(null)
+  const [biometricEnabled, setBiometricEnabled] = useState(false)
 
   useEffect(() => {
     let cancelled = false
-    getMeta()
-      .then((meta) => {
+    Promise.all([getMeta(), isBiometricEnabled()])
+      .then(([meta, biometric]) => {
         if (cancelled) return
         setLockedUntil(meta?.lockedUntil ?? null)
+        setBiometricEnabled(biometric)
         setStatus(meta ? 'locked' : 'setup')
       })
       .catch(() => {
@@ -45,14 +48,27 @@ export function VaultProvider({ children }: { children: ReactNode }) {
     return result
   }, [])
 
+  const refreshBiometric = useCallback(async () => setBiometricEnabled(await isBiometricEnabled()), [])
+
+  const unlockWithBiometric = useCallback(async () => {
+    try {
+      setKey(await unlockWithDevice())
+      setLockedUntil(null)
+      setStatus('unlocked')
+      return null
+    } catch (error) {
+      return describeBiometricError(error)
+    }
+  }, [])
+
   const lock = useCallback(() => {
     setKey(null)
     setStatus((current) => (current === 'unlocked' ? 'locked' : current))
   }, [])
 
   const value = useMemo<VaultContextValue>(
-    () => ({ status, key, lockedUntil, setup, unlock, lock }),
-    [status, key, lockedUntil, setup, unlock, lock],
+    () => ({ status, key, lockedUntil, setup, unlock, lock, biometricEnabled, refreshBiometric, unlockWithBiometric }),
+    [status, key, lockedUntil, setup, unlock, lock, biometricEnabled, refreshBiometric, unlockWithBiometric],
   )
 
   return <VaultContext.Provider value={value}>{children}</VaultContext.Provider>

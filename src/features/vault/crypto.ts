@@ -30,6 +30,18 @@ export async function deriveKey(pin: string, salt: string, iterations: number): 
   )
 }
 
+/** The same 256 bits `deriveKey` turns into a key, as raw bytes. Only for wrapping; the caller must zero them. */
+export async function deriveKeyBytes(pin: string, salt: string, iterations: number): Promise<Uint8Array<ArrayBuffer>> {
+  const material = await crypto.subtle.importKey('raw', encoder.encode(pin), 'PBKDF2', false, ['deriveBits'])
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: fromBase64(salt), iterations }, material, 256)
+  return new Uint8Array(bits)
+}
+
+/** Imports raw key bytes as the non-extractable vault key. */
+export function importVaultKey(bytes: Uint8Array<ArrayBuffer>): Promise<CryptoKey> {
+  return crypto.subtle.importKey('raw', bytes, 'AES-GCM', false, ['encrypt', 'decrypt'])
+}
+
 /**
  * Encrypts text with a fresh random IV. `context` is authenticated but not encrypted:
  * decryption fails if the ciphertext is presented under a different context.

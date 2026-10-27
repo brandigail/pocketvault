@@ -35,3 +35,14 @@ export interface VaultMeta {
   failedAttempts: number
   lockedUntil: number | null
 }
+
+/** Lets a fingerprint, face or screen lock unlock the vault. The vault key inside is useless without the authenticator. */
+export interface BiometricRecord {
+  /** The WebAuthn credential to ask for, base64. */
+  credentialId: string
+  /** Input to the authenticator's PRF, base64. Not secret. */
+  prfSalt: string
+  /** The vault key, encrypted with a key only the authenticator can produce. Both fields are base64. */
+  ciphertext: string
+  iv: string
+}

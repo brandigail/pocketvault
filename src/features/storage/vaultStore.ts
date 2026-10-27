@@ -1,7 +1,8 @@
-import type { StoredSecret, TokenAccount, VaultMeta } from '../../types'
+import type { BiometricRecord, StoredSecret, TokenAccount, VaultMeta } from '../../types'
 import { STORES, promisify, withTransaction } from './db'
 
 const META_KEY = 'vault'
+const BIOMETRIC_KEY = 'biometric'
 
 export function getAccounts(): Promise<TokenAccount[]> {
   return withTransaction([STORES.accounts], 'readonly', (tx) =>
@@ -76,6 +77,24 @@ export function getMeta(): Promise<VaultMeta | undefined> {
 export function saveMeta(meta: VaultMeta): Promise<void> {
   return withTransaction([STORES.meta], 'readwrite', async (tx) => {
     await promisify(tx.objectStore(STORES.meta).put(meta, META_KEY))
+  })
+}
+
+export function getBiometric(): Promise<BiometricRecord | undefined> {
+  return withTransaction([STORES.meta], 'readonly', (tx) =>
+    promisify(tx.objectStore(STORES.meta).get(BIOMETRIC_KEY) as IDBRequest<BiometricRecord | undefined>),
+  )
+}
+
+export function saveBiometric(record: BiometricRecord): Promise<void> {
+  return withTransaction([STORES.meta], 'readwrite', async (tx) => {
+    await promisify(tx.objectStore(STORES.meta).put(record, BIOMETRIC_KEY))
+  })
+}
+
+export function clearBiometric(): Promise<void> {
+  return withTransaction([STORES.meta], 'readwrite', async (tx) => {
+    await promisify(tx.objectStore(STORES.meta).delete(BIOMETRIC_KEY))
   })
 }
 

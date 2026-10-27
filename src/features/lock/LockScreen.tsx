@@ -12,7 +12,7 @@ function formatCountdown(totalSeconds: number): string {
 }
 
 export function LockScreen() {
-  const { unlock, lockedUntil } = useVault()
+  const { unlock, lockedUntil, biometricEnabled, unlockWithBiometric } = useVault()
   const [pin, setPin] = useState('')
   const [message, setMessage] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -21,6 +21,17 @@ export function LockScreen() {
   const now = useNow(1000, isLocked)
   const secondsLeft = isLocked ? Math.max(0, Math.ceil((lockedUntil - now) / 1000)) : 0
   const lockedOut = secondsLeft > 0
+
+  async function handleBiometric() {
+    if (busy) return
+    setBusy(true)
+    setMessage(null)
+    const failure = await unlockWithBiometric()
+    if (failure) {
+      setMessage(failure)
+      setBusy(false)
+    }
+  }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -42,7 +53,17 @@ export function LockScreen() {
   }
 
   return (
-    <LockLayout title="PocketVault" subtitle="Enter your PIN to unlock.">
+    <LockLayout title="PocketVault" subtitle={biometricEnabled ? 'Use your fingerprint or face, or enter your PIN.' : 'Enter your PIN to unlock.'}>
+      {biometricEnabled && (
+        <button
+          type="button"
+          onClick={() => void handleBiometric()}
+          disabled={busy}
+          className="h-12 rounded-lg border border-teal-700 font-medium text-teal-800 hover:bg-teal-50 disabled:opacity-60 dark:border-teal-500 dark:text-teal-300 dark:hover:bg-slate-800"
+        >
+          Unlock with biometrics
+        </button>
+      )}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <PinField id="pin" label="PIN" value={pin} onChange={setPin} autoComplete="current-password" autoFocus disabled={busy || lockedOut} />
         {lockedOut ? (
