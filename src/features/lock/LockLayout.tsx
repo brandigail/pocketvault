@@ -15,6 +15,7 @@ export function LockLayout({ title, subtitle, children }: LockLayoutProps) {
         <p className="text-sm text-slate-600 dark:text-slate-400">{subtitle}</p>
       </header>
       {children}
+      <p className="text-center text-xs text-slate-500 dark:text-slate-400">Version {__BUILD_STAMP__}</p>
     </main>
   )
 }

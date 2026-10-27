@@ -12,7 +12,14 @@ export function UpdateBanner() {
     updateServiceWorker,
   } = useRegisterSW({
     onRegisteredSW(_url, registration) {
-      if (registration) window.setInterval(() => void registration.update(), UPDATE_CHECK_MS)
+      if (!registration) return
+      const check = () => void registration.update().catch(() => undefined)
+      // Phones suspend timers, so also look for a new version whenever the app is opened or resumed.
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') check()
+      })
+      window.addEventListener('online', check)
+      window.setInterval(check, UPDATE_CHECK_MS)
     },
   })
   const [updating, setUpdating] = useState(false)
