@@ -2,7 +2,7 @@
 
 An offline two-factor authenticator that runs entirely in the browser. Scan or paste an `otpauth` link, get rolling 6 or 8 digit codes with a countdown, and keep every secret encrypted on the device behind a PIN. No backend, no account, no network needed once installed.
 
-**Live demo:** TBD
+**Live demo:** https://pocketvault-brandon.netlify.app
 
 | Create PIN | Codes (light) | Codes (dark) |
 | :---: | :---: | :---: |
