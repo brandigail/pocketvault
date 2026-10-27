@@ -1,7 +1,7 @@
 # PocketVault: Build Plan
 
 - [x] 1. Scaffold the project (stack in `CLAUDE.md`), strict `tsconfig`, lint, `netlify.toml`, `.env.example`; first working commit
-- [ ] 2. Storage layer (IndexedDB) and `types/`
+- [x] 2. Storage layer (IndexedDB) and `types/`
 - [ ] 3. Base32 decode and TOTP engine with RFC test-vector tests
 - [ ] 4. otpauth URI parser with tests
 - [ ] 5. PIN setup, key derivation and encrypted secret storage
