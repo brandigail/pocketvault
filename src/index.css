@@ -1,4 +1,18 @@
 @import "tailwindcss";
 
 html, body, #root { height: 100%; }
-body { @apply bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100; }
+body {
+  @apply bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Keep content clear of notches and home indicators (the viewport uses viewport-fit=cover). */
+#root {
+  box-sizing: border-box;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* No 300 ms double-tap-to-zoom delay on controls. */
+button, [role="tab"], summary, label, select {
+  touch-action: manipulation;
+}

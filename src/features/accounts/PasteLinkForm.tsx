@@ -34,7 +34,7 @@ export function PasteLinkForm({ disabled, onSubmit, onError }: PasteLinkFormProp
           autoComplete="off"
           spellCheck={false}
           disabled={disabled}
-          className="rounded-lg border border-slate-300 bg-white p-3 font-mono text-sm focus:border-teal-600 focus:outline-2 focus:outline-teal-600 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800"
+          className="rounded-lg border border-slate-300 bg-white p-3 font-mono text-base focus:border-teal-600 focus:outline-2 focus:outline-teal-600 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800"
         />
         <p className="text-xs text-slate-500 dark:text-slate-400">
           Services show this link under the QR code, often as &quot;can&apos;t scan?&quot; or &quot;setup key&quot;.

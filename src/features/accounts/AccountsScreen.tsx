@@ -12,7 +12,7 @@ import { useNotice } from './useNotice'
 import { useVaultAccounts } from './useVaultAccounts'
 
 const TICK_MS = 250
-const BUTTON = 'h-11 rounded-lg px-4 text-sm font-medium'
+const BUTTON = 'h-11 rounded-lg px-3 text-sm font-medium min-[360px]:px-4'
 const PRIMARY = `${BUTTON} bg-teal-700 text-white hover:bg-teal-800`
 const OUTLINE = `${BUTTON} border border-slate-300 hover:border-teal-600 dark:border-slate-600`
 
@@ -56,7 +56,7 @@ export function AccountsScreen({ vaultKey }: { vaultKey: CryptoKey }) {
   return (
     <div className="mx-auto flex min-h-full w-full max-w-md flex-col px-4 pb-24">
       <header className="flex items-center justify-between gap-2 py-4">
-        <h1 className="text-xl font-semibold">PocketVault</h1>
+        <h1 className="text-lg font-semibold min-[360px]:text-xl">PocketVault</h1>
         <div className="flex gap-2">
           {!editing && (
             <button type="button" onClick={() => setAdding(true)} className={PRIMARY}>
@@ -136,7 +136,7 @@ export function AccountsScreen({ vaultKey }: { vaultKey: CryptoKey }) {
         />
       )}
 
-      <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-6 flex justify-center px-4">
+      <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-[max(1.5rem,env(safe-area-inset-bottom))] flex justify-center px-4">
         {notice && <p className="rounded-full bg-slate-900 px-4 py-2 text-sm text-white shadow-lg dark:bg-slate-100 dark:text-slate-900">{notice}</p>}
       </div>
     </div>

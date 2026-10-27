@@ -13,7 +13,7 @@
 - [x] 11. Seed demo accounts
 - [x] 12. Offline verification (airplane mode)
 - [x] 13. PWA manifest, offline shell, update banner
-- [ ] 14. Mobile polish at 375px
+- [x] 14. Mobile polish at 375px
 - [ ] 15. Quality gate: `npm run build`, lint and `tsc --noEmit` all pass; no console errors; core flow tested at 375px and desktop
 - [ ] 16. README: pitch, features, stack, architecture notes, screenshot placeholders, run steps, 3-bullet "what to demo to a recruiter", Phase 2 list
 - [ ] 17. Deploy to Netlify, set env vars, verify the public URL end to end

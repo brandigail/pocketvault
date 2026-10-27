@@ -23,7 +23,7 @@ export function CountdownRing({ fraction, secondsLeft }: CountdownRingProps) {
           strokeLinecap="round"
           strokeDasharray={CIRCUMFERENCE}
           strokeDashoffset={CIRCUMFERENCE * (1 - fraction)}
-          className={`transition-[stroke-dashoffset] duration-300 ease-linear ${urgent ? 'stroke-red-500' : 'stroke-teal-600'}`}
+          className={`transition-[stroke-dashoffset] duration-300 ease-linear motion-reduce:transition-none ${urgent ? 'stroke-red-500' : 'stroke-teal-600'}`}
         />
       </svg>
       <span

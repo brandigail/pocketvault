@@ -12,7 +12,7 @@ interface ManualFormProps {
 
 const INITIAL: ManualEntry = { issuer: '', label: '', secret: '', algorithm: 'SHA1', digits: 6, period: '30' }
 const SELECT_CLASS =
-  'h-12 min-w-0 rounded-lg border border-slate-300 bg-white px-2 focus:border-teal-600 focus:outline-2 focus:outline-teal-600 dark:border-slate-600 dark:bg-slate-800'
+  'h-12 min-w-0 rounded-lg border text-base border-slate-300 bg-white px-2 focus:border-teal-600 focus:outline-2 focus:outline-teal-600 dark:border-slate-600 dark:bg-slate-800'
 
 export function ManualForm({ disabled, onSubmit, onError }: ManualFormProps) {
   const [entry, setEntry] = useState<ManualEntry>(INITIAL)
@@ -45,7 +45,7 @@ export function ManualForm({ disabled, onSubmit, onError }: ManualFormProps) {
       />
 
       <details className="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
-        <summary className="cursor-pointer text-sm font-medium">Advanced</summary>
+        <summary className="cursor-pointer py-3.5 text-sm font-medium">Advanced</summary>
         <div className="mt-3 grid grid-cols-[5fr_3fr_4fr] gap-2">
           <label className="flex min-w-0 flex-col gap-1.5 text-sm font-medium">
             Algorithm

@@ -26,7 +26,7 @@ export function UpdateBanner() {
   if (!needRefresh && !offlineReady) return null
 
   return (
-    <div role="status" className="fixed inset-x-0 top-0 z-50 flex justify-center p-3">
+    <div role="status" className="fixed inset-x-0 top-0 z-50 flex justify-center px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
       <div className="flex w-full max-w-md flex-col gap-3 rounded-xl bg-slate-900 p-4 text-sm text-white shadow-lg dark:bg-slate-100 dark:text-slate-900">
         {needRefresh ? (
           <>
