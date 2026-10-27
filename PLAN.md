@@ -5,7 +5,7 @@
 - [x] 3. Base32 decode and TOTP engine with RFC test-vector tests
 - [x] 4. otpauth URI parser with tests
 - [x] 5. PIN setup, key derivation and encrypted secret storage
-- [ ] 6. Lock screen with lockout delay and auto-lock
+- [x] 6. Lock screen with lockout delay and auto-lock
 - [ ] 7. Account list with live codes and countdown ring
 - [ ] 8. Add account: manual entry and URI paste
 - [ ] 9. Camera QR scanning with jsqr
