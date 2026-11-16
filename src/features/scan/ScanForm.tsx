@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
-import { cameraSupported, decodeQr, decodeQrFromFile } from './qr'
+import { cameraSupported, createNativeDetector, decodeQr, decodeQrFromFile, detectNative } from './qr'
 
 type CameraStatus = 'starting' | 'active' | 'denied' | 'unavailable'
 
-const SCAN_INTERVAL_MS = 150
+const SCAN_INTERVAL_MS = 120
+const FALLBACK_SCAN_INTERVAL_MS = 200
 const REPEAT_IGNORE_MS = 2500
-const MAX_SCAN_WIDTH = 640
+/** The small decoder gets a big picture: a dense code on a screen has modules only a few pixels wide. */
+const MAX_SCAN_WIDTH = 1280
+const HINT_AFTER_MS = 8000
 
 const STATUS_TEXT: Record<CameraStatus, string> = {
   starting: 'Starting camera…',
@@ -23,6 +26,7 @@ export function ScanForm({ onDetected, onError }: ScanFormProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const [status, setStatus] = useState<CameraStatus>(() => (cameraSupported() ? 'starting' : 'unavailable'))
+  const [slow, setSlow] = useState(false)
 
   const onDetectedRef = useRef(onDetected)
   useEffect(() => {
@@ -32,6 +36,7 @@ export function ScanForm({ onDetected, onError }: ScanFormProps) {
   useEffect(() => {
     const video = videoRef.current
     if (!video || !cameraSupported()) return
+    const player: HTMLVideoElement = video
 
     let cancelled = false
     let stream: MediaStream | null = null
@@ -39,50 +44,79 @@ export function ScanForm({ onDetected, onError }: ScanFormProps) {
     let lastScan = 0
     let lastText = ''
     let lastTextAt = 0
+    let busy = false
+    let hintTimer = 0
     const canvas = document.createElement('canvas')
     const context = canvas.getContext('2d', { willReadFrequently: true })
 
-    function scan(time: number) {
-      frame = requestAnimationFrame(scan)
-      if (!video || !context || time - lastScan < SCAN_INTERVAL_MS || video.readyState < video.HAVE_ENOUGH_DATA) return
-      lastScan = time
-
-      const ratio = Math.min(1, MAX_SCAN_WIDTH / video.videoWidth)
-      canvas.width = Math.round(video.videoWidth * ratio)
-      canvas.height = Math.round(video.videoHeight * ratio)
-      context.drawImage(video, 0, 0, canvas.width, canvas.height)
-      const text = decodeQr(context.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height)
-
+    function report(text: string) {
       const now = Date.now()
-      if (text && (text !== lastText || now - lastTextAt > REPEAT_IGNORE_MS)) {
+      if (text !== lastText || now - lastTextAt > REPEAT_IGNORE_MS) {
         lastText = text
         lastTextAt = now
         onDetectedRef.current(text)
       }
     }
 
-    navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false })
-      .then(async (opened) => {
+    async function start() {
+      const native = await createNativeDetector()
+      if (cancelled) return
+      const interval = native ? SCAN_INTERVAL_MS : FALLBACK_SCAN_INTERVAL_MS
+
+      function scan(time: number) {
+        frame = requestAnimationFrame(scan)
+        if (busy || !video || time - lastScan < interval || video.readyState < video.HAVE_ENOUGH_DATA || video.videoWidth === 0) return
+        lastScan = time
+        if (native) {
+          busy = true
+          void detectNative(native, video).then((text) => {
+            busy = false
+            if (text && !cancelled) report(text)
+          })
+          return
+        }
+        if (!context) return
+        const ratio = Math.min(1, MAX_SCAN_WIDTH / video.videoWidth)
+        canvas.width = Math.round(video.videoWidth * ratio)
+        canvas.height = Math.round(video.videoHeight * ratio)
+        context.drawImage(video, 0, 0, canvas.width, canvas.height)
+        const text = decodeQr(context.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height)
+        if (text) report(text)
+      }
+
+      try {
+        // A phone gives a small picture unless asked for more, and a small picture cannot hold a dense code.
+        const opened = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+          audio: false,
+        })
         if (cancelled) {
           opened.getTracks().forEach((track) => track.stop())
           return
         }
         stream = opened
-        video.srcObject = opened
-        await video.play()
+        // Keep refocusing as the phone moves, where the camera supports it. Ignored where it does not.
+        await opened
+          .getVideoTracks()[0]
+          ?.applyConstraints({ advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet] })
+          .catch(() => undefined)
+        player.srcObject = opened
+        await player.play()
         setStatus('active')
+        hintTimer = window.setTimeout(() => setSlow(true), HINT_AFTER_MS)
         frame = requestAnimationFrame(scan)
-      })
-      .catch((error: unknown) => {
+      } catch (error: unknown) {
         if (cancelled) return
         const name = error instanceof DOMException ? error.name : ''
         setStatus(name === 'NotAllowedError' || name === 'SecurityError' ? 'denied' : 'unavailable')
-      })
+      }
+    }
+    void start()
 
     return () => {
       cancelled = true
       cancelAnimationFrame(frame)
+      window.clearTimeout(hintTimer)
       stream?.getTracks().forEach((track) => track.stop())
       video.srcObject = null
     }
@@ -115,6 +149,12 @@ export function ScanForm({ onDetected, onError }: ScanFormProps) {
         )}
       </div>
       {status === 'active' && <p className="text-center text-sm text-slate-600 dark:text-slate-400">{STATUS_TEXT.active}</p>}
+      {status === 'active' && slow && (
+        <p role="status" className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 text-sm">
+          Still looking. Hold the phone steady about a hand-width from the code, turn the other screen&apos;s brightness up, and fill the box with the code. If it still will not read,
+          use <strong>Manual</strong> and type the setup key the service shows under the QR code.
+        </p>
+      )}
 
       <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="sr-only" tabIndex={-1} aria-label="QR code image file" />
       <button
