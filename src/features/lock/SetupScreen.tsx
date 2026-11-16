@@ -21,8 +21,13 @@ export function SetupScreen() {
     setBusy(true)
     try {
       await setup(pin, withDemo)
-    } catch {
-      setError('Could not create the vault. Check that your browser allows site storage.')
+    } catch (error) {
+      // A second open tab can find the vault already made; say so instead of blaming storage.
+      setError(
+        error instanceof Error && error.message.includes('already exists')
+          ? 'A vault already exists on this device. Reload the page and enter your PIN.'
+          : 'Could not create the vault. Check that your browser allows site storage.',
+      )
       setBusy(false)
     }
   }

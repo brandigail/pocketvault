@@ -95,8 +95,8 @@ export function ScanForm({ onDetected, onError }: ScanFormProps) {
           return
         }
         stream = opened
-        // Keep refocusing as the phone moves, where the camera supports it. Ignored where it does not.
-        await opened
+        // Keep refocusing as the phone moves, where the camera supports it. It is only a nicety, so it is never waited for.
+        void opened
           .getVideoTracks()[0]
           ?.applyConstraints({ advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet] })
           .catch(() => undefined)

@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* PocketVault is dark only: the dark: styles apply whatever the phone's own setting is. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+html {
+  color-scheme: dark;
+}
+
 html, body, #root { height: 100%; }
 body {
   @apply bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100;

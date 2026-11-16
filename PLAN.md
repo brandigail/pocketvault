@@ -26,3 +26,4 @@
 - [x] 21. Settings screen and encrypted backup: password-protected export (PIN re-check) and import with duplicate skipping
 - [x] 22. Biometric unlock (optional): WebAuthn PRF wraps the vault key, enable/disable in settings, PIN always works
 - [x] 23. Phase 2 quality gate, README and security notes, deploy, verify on the live URL
+- [x] 24. QR scan fix (2026-11-16, tested on a real Samsung A56 over USB): ask the camera for 1080p with continuous focus, use the browser's own QR detector when it has one (jsQR stays as the fallback), a hint after 8 s, clearer "vault already exists" message; dark mode only. Scanning a Neon-style QR on a monitor saved an account in ~10 s and the code matched an independent calculation. Not deployed.
